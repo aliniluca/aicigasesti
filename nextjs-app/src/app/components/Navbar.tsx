@@ -1,5 +1,6 @@
-'use client'
 
+
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../Redux/store';
 import { setLoggedIn, clearUser } from '../../Redux/authSlice';
@@ -21,6 +22,7 @@ function NavScrollExample() {
   const receivedMessagesCount = useSelector((state: RootState) => state.message.pendingMessageCount); // Select receivedMessagesCount from Redux
   const router = useRouter(); 
   const pathname = usePathname();
+  const [searchTerm, setSearchTerm] = useState('');
 
   const dispatch = useDispatch();
 
@@ -30,7 +32,7 @@ function NavScrollExample() {
       await apiRequest({
         method: 'POST',
         url: `${process.env.NEXT_PUBLIC_URL_BACKEND_LOGOUT}`, // Use the environment variable
-        useCredentials: true,
+        withCredentials: true,
       });
       // Update Redux state after successful logout
       dispatch(setLoggedIn(false));
@@ -50,8 +52,8 @@ function NavScrollExample() {
       // Reset received messages count on the backend
       await apiRequest({
         method: 'PATCH',
-        url: `${process.env.NEXT_PUBLIC_BACKEND_URL_RESET_PENDING_MESSAGES_COUNT}`, 
-        useCredentials: true,
+        url: `${process.env.NEXT_PUBLIC_BACKEND_URL_RESET_PENDING_MESSAGES_COUNT}`,
+        withCredentials: true,
       });
 
       // Reset the pending message count in Redux
@@ -65,6 +67,13 @@ function NavScrollExample() {
         console.error('Failed to reset pending message count:', error);
       }
     }
+  };
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // Implement your search logic here
+    console.log('Searching for:', searchTerm);
+    // You might want to navigate to a search results page or update the current page with results
   };
 
   return (
@@ -111,7 +120,17 @@ function NavScrollExample() {
           : null
           }
 
-
+<form className={`d-flex me-2 ${styles.searchForm}`} onSubmit={handleSearch}>
+            <input
+              type="search"
+              placeholder="Search"
+              className={`form-control me-2 ${styles.searchInput}`}
+              aria-label="Search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <button className="btn btn-outline-success" type="submit">Search</button>
+          </form>
           </Nav>
 
           <Nav className="ms-auto d-flex align-items-center">
@@ -152,6 +171,8 @@ function NavScrollExample() {
               </Dropdown.Menu>
             </Dropdown>
           </Nav>
+
+          
         </Navbar.Collapse>
       </Container>
     </Navbar>
