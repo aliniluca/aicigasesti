@@ -16,7 +16,7 @@ apiClient.interceptors.response.use(
 
       try {
         // Attempt to refresh the token using the refresh endpoint
-        const refreshResponse = await axios.post(BACKEND_REFRESH_URL, {}, { withCredentials: true });
+        const refreshResponse = await axios.post(BACKEND_REFRESH_URL!, {}, { withCredentials: true });
 
         if (refreshResponse.data.statusCode === 200) {
           //  console.log("Token refreshed successfully");

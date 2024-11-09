@@ -218,11 +218,15 @@ const categories: Category[] = [
   },
 ];
 
+interface AdsProps {
+  ads: Ad[];
+}
+
 const Ads: React.FC = () => {
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   useEffect(() => {
     const fetchAds = async () => {
       try {
@@ -256,6 +260,10 @@ const Ads: React.FC = () => {
     return <div>{error}</div>;
   }
 
+  const toggleCategory = (slug: string) => {
+    setExpandedCategory(expandedCategory === slug ? null : slug);
+  };
+
   return (
     <div className="container">
       <h1 className="my-4">Categories</h1>
@@ -267,6 +275,8 @@ const Ads: React.FC = () => {
               slug={category.slug}
               iconPath={category.iconPath}
               subcategories={category.subcategories}
+              isExpanded={expandedCategory === category.slug}
+              onToggle={() => toggleCategory(category.slug)}
             />
           </Col>
         ))}
@@ -283,5 +293,4 @@ const Ads: React.FC = () => {
     </div>
   );
 };
-
 export default Ads;

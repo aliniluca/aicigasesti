@@ -14,19 +14,30 @@ interface CategoryCardProps {
   slug: string;
   iconPath: string;
   subcategories: Subcategory[];
+  isExpanded: boolean;
+  onToggle: () => void;
 }
 
-const CategoryCard: React.FC<CategoryCardProps> = ({ name, slug, iconPath, subcategories }) => {
+const CategoryCard: React.FC<CategoryCardProps> = ({ name, slug, iconPath, subcategories, isExpanded, onToggle }) => {
   return (
-    <Link href={`/category/${slug}`} passHref className="text-decoration-none">
-      <Card className="mb-4 text-center h-100">
-        <Card.Body className="d-flex flex-column justify-content-center">
-          <Image src={iconPath} alt={name} width={64} height={64} className="mx-auto" />
-          <Card.Title className="mt-3">{name}</Card.Title>
-          <SubcategoryMenu subcategories={subcategories.map(sub => sub.slug)} />
-        </Card.Body>
-      </Card>
-    </Link>
+    <div className="card mb-4">
+      <div className="card-body" onClick={onToggle} style={{ cursor: 'pointer' }}>
+        <img src={iconPath} alt={name} className="category-icon" />
+        <h5 className="card-title">{name}</h5>
+      </div>
+      {isExpanded && (
+        <ul className="list-group list-group-flush">
+          <li className="list-group-item">
+            <a href={`/category/${slug}`}>All in {name}</a>
+          </li>
+          {subcategories.map((subcategory) => (
+            <li key={subcategory.slug} className="list-group-item">
+              <a href={`/category/${slug}/${subcategory.slug}`}>{subcategory.name}</a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 };
 
