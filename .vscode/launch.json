@@ -1,0 +1,51 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Backend: Debug",
+      "type": "node",
+      "request": "launch",
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register"
+      ],
+      "args": [
+        "${workspaceFolder}/backend/src/main.ts"
+      ],
+      "cwd": "${workspaceFolder}/backend",
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/backend/**/*.ts"],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Next.js: Debug",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "${workspaceFolder}/nextjs-app",
+      "console": "integratedTerminal",
+      "env": {
+        "NODE_ENV": "development",
+        "PORT": "8089"
+      }
+    },
+    {
+      "name": "Next.js: Debug Client-Side",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3009",
+      "webRoot": "${workspaceFolder}/nextjs-app",
+      "sourceMaps": true
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack: Backend + Frontend",
+      "configurations": ["Backend: Debug", "Next.js: Debug", "Next.js: Debug Client-Side"]
+    }
+  ]
+}
