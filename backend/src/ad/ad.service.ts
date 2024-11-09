@@ -223,4 +223,48 @@ export class AdService {
       );
     }
   }
+
+  async findAdsBySubcategorySlug(categorySlug: string, subcategorySlug: string) {
+    try {
+      // Find the subcategory with the given slug under the specified category
+      const subcategory = await this.prisma.subcategory.findFirst({
+        where: {
+          slug: subcategorySlug,
+          category: {
+            slug: categorySlug,
+          },
+        },
+      });
+
+      if (!subcategory) {
+        throw new HttpException(
+          createErrorResponse('Subcategory not found', 'No subcategory matches the provided slugs'),
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // Fetch ads under the found subcategory
+      const ads = await this.prisma.ad.findMany({
+        where: {
+          subcategoryId: subcategory.id,
+        },
+        include: {
+          media: true,
+          createdBy: true,
+        },
+      });
+
+      const adsWithConvertedTimes = ads.map(ad => this.convertAdTimes(ad));
+      const adsWithMedia = await Promise.all(
+        adsWithConvertedTimes.map(ad => this.processAdMedia(ad)),
+      );
+
+      return createSuccessResponse(adsWithMedia, 'Ads fetched successfully');
+    } catch (error) {
+      throw new HttpException(
+        createErrorResponse('Failed to fetch ads by subcategory', error.message),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }

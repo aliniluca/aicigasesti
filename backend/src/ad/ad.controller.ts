@@ -93,4 +93,19 @@ export class AdController {
       );
     }
   }
+
+  @Get('/category/:categorySlug/subcategory/:subcategorySlug')
+  async findAdsBySubcategory(
+    @Param('categorySlug') categorySlug: string,
+    @Param('subcategorySlug') subcategorySlug: string,
+  ) {
+    try {
+      return await this.adService.findAdsBySubcategorySlug(categorySlug, subcategorySlug);
+    } catch (error) {
+      throw new HttpException(
+        createErrorResponse('Error fetching ads by subcategory', error.message),
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }
