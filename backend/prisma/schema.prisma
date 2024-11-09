@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum AdStatus {
+  ACTIV
+  INACTIV
+  VANDUT
+  EXPIRED
+  DEACTIVAT
+}
+
+enum AdType {
+  VAND // SELLING
+  CAUT // SEEKING
+  INCHIRIEZ // RENTING
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+}
+
+model User {
+  id                  Int             @id @default(autoincrement())
+  username            String          @unique
+  email               String          @unique
+  phoneNumber         String          @unique
+  password            String
+  profilePicture      String?
+  role                UserRole        @default(USER)
+  isBanned            Boolean         @default(false) // Added for handling banned users
+  banReason           String?         // Optional reason for banning
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  ads                 Ad[]
+  conversations       Conversation[]  @relation("UserConversations")
+  sentMessages        Message[]       @relation("SenderMessages")
+  receivedMessages    Message[]       @relation("ReceiverMessages")
+  pendingMessageCount Int             @default(0)
+  tokens              Int             @default(0) // User token column
+}
+
+model Ad {
+  id                  String           @id @default(uuid())
+  title               String
+  slug                String           @unique
+  description         String
+  price               Float
+  minimumPrice        Float?
+  type                AdType
+  acceptMessages      Boolean
+  location            String
+  adStatus            AdStatus         @default(ACTIV)
+  category            Category         @relation(fields: [categoryId], references: [id])
+  categoryId          String
+  subcategory         Subcategory?     @relation(fields: [subcategoryId], references: [id])
+  subcategoryId       String?
+  createdBy           User             @relation(fields: [createdById], references: [id])
+  createdById         Int
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  reconfirmed        DateTime?
+  media               Media[]          @relation("AdMedia")
+  numberOfImpressions Int              @default(0)
+  conversations       Conversation[]
+  isPaid              Boolean          @default(false)
+  deactivatedAt       DateTime?
+
+  // Dynamic fields for Auto
+  year                Int?
+  mileage             Float?
+  brand               String?
+  model               String?
+  fuelType            String?
+
+  // Dynamic fields for Imobiliare
+  numberOfRooms       Int?
+  numberOfBathrooms   Int?
+  MPU                 Float?
+  MPC                 Float?
+  propertyType        String?
+
+  // Add other dynamic fields as needed
+}
+
+model Category {
+  id            String        @id @default(uuid())
+  name          String        @unique
+  slug          String        @unique // Added for SEO
+  ads           Ad[]
+  subcategories Subcategory[] // Reverse relation
+  filters       CategoryFilter[] // Added for customizable filters
+}
+
+model Subcategory {
+  id         String   @id @default(uuid())
+  name       String
+  slug       String   @unique // Added for SEO
+  ads        Ad[]
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+  filters    CategoryFilter[] // Added for customizable filters
+}
+
+model Media {
+  id        String    @id @default(uuid())
+  url       String
+  type      MediaType
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  ad        Ad?       @relation("AdMedia", fields: [adId], references: [id])
+  adId      String?
+}
+
+model Conversation {
+  id           Int       @id @default(autoincrement())
+  participants User[]    @relation("UserConversations")
+  messages     Message[]
+  ad           Ad?       @relation(fields: [adId], references: [id])
+  adId         String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Message {
+  id             Int          @id @default(autoincrement())
+  senderId       Int
+  sender         User         @relation("SenderMessages", fields: [senderId], references: [id])
+  receiverId     Int
+  receiver       User         @relation("ReceiverMessages", fields: [receiverId], references: [id])
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  content        String
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  seenAt         DateTime?
+}
+
+model County {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+}
+
+// New Models for Enhanced Features
+
+model CategoryFilter {
+  id           String       @id @default(uuid())
+  name         String
+  filterType   FilterType
+  options      String[]     // Possible options or JSON for complex filters
+  category     Category?    @relation(fields: [categoryId], references: [id])
+  categoryId   String?
+  subcategory  Subcategory? @relation(fields: [subcategoryId], references: [id])
+  subcategoryId String?
+}
+
+enum FilterType {
+  STATIC
+  DYNAMIC
+}
+

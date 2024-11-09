@@ -1,0 +1,11 @@
+-- AlterTable
+ALTER TABLE "Ad" ADD COLUMN     "MPC" DOUBLE PRECISION,
+ADD COLUMN     "MPU" DOUBLE PRECISION,
+ADD COLUMN     "brand" TEXT,
+ADD COLUMN     "fuelType" TEXT,
+ADD COLUMN     "mileage" DOUBLE PRECISION,
+ADD COLUMN     "model" TEXT,
+ADD COLUMN     "numberOfBathrooms" INTEGER,
+ADD COLUMN     "numberOfRooms" INTEGER,
+ADD COLUMN     "propertyType" TEXT,
+ADD COLUMN     "year" INTEGER;
