@@ -6,7 +6,4 @@ export class CreateSubcategoryDto {
 
   @IsString()
   categoryId: string;
-
-  @IsString()
-  slug: string;
 }

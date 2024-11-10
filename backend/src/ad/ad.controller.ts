@@ -94,16 +94,26 @@ export class AdController {
     }
   }
 
-  @Get('/category/:categorySlug/subcategory/:subcategorySlug')
+  @Get('category/:categorySlug/subcategory/:subcategorySlug')
   async findAdsBySubcategory(
     @Param('categorySlug') categorySlug: string,
     @Param('subcategorySlug') subcategorySlug: string,
   ) {
+    console.log(`Received request for category: ${categorySlug}, subcategory: ${subcategorySlug}`);
+
     try {
-      return await this.adService.findAdsBySubcategorySlug(categorySlug, subcategorySlug);
+      const ads = await this.adService.findAdsBySubcategorySlug(categorySlug, subcategorySlug);
+      return {
+        data: ads,
+        message: 'Ads fetched successfully',
+        status: 'success',
+      };
     } catch (error) {
       throw new HttpException(
-        createErrorResponse('Error fetching ads by subcategory', error.message),
+        {
+          message: 'Error fetching ads by subcategory',
+          error: error.message,
+        },
         error.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

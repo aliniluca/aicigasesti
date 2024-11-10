@@ -225,18 +225,17 @@ export class AdService {
   }
 
   async findAdsBySubcategorySlug(categorySlug: string, subcategorySlug: string) {
+    console.log(`Fetching ads for category: ${categorySlug}, subcategory: ${subcategorySlug}`);
+
     try {
-      // Find the subcategory with the given slug under the specified category
-      const subcategory = await this.prisma.subcategory.findFirst({
-        where: {
-          slug: subcategorySlug,
-          category: {
-            slug: categorySlug,
-          },
-        },
+      // Retrieve the subcategory by its unique slug
+      const subcategory = await this.prisma.subcategory.findUnique({
+        where: { slug: subcategorySlug },
+        include: { category: true },
       });
 
-      if (!subcategory) {
+      // Verify that the subcategory exists and belongs to the specified category
+      if (!subcategory || subcategory.category.slug !== categorySlug) {
         throw new HttpException(
           createErrorResponse('Subcategory not found', 'No subcategory matches the provided slugs'),
           HttpStatus.NOT_FOUND,
@@ -254,17 +253,17 @@ export class AdService {
         },
       });
 
+      // Process ads (e.g., convert times, handle media)
       const adsWithConvertedTimes = ads.map(ad => this.convertAdTimes(ad));
       const adsWithMedia = await Promise.all(
         adsWithConvertedTimes.map(ad => this.processAdMedia(ad)),
       );
 
+      // Return the ads (which could be an empty array)
       return createSuccessResponse(adsWithMedia, 'Ads fetched successfully');
     } catch (error) {
-      throw new HttpException(
-        createErrorResponse('Failed to fetch ads by subcategory', error.message),
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      console.error(`Error in findAdsBySubcategorySlug: ${error.message}`);
+      throw error; // Rethrow to be caught by controller
     }
   }
 }
