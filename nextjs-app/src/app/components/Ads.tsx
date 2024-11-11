@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { apiRequest } from '@/utils/axiosApiRequest';
 import AdCard from './AdCard';
 import CategoryCard from './CategoryCard';
-import { Spinner, Row, Col } from 'react-bootstrap'; 
+import { Spinner, Row, Col, Alert } from 'react-bootstrap';
 
 // Define TypeScript interfaces for the ad
 interface Ad {
@@ -218,15 +218,12 @@ const categories: Category[] = [
   },
 ];
 
-interface AdsProps {
-  ads: Ad[];
-}
-
 const Ads: React.FC = () => {
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchAds = async () => {
       try {
@@ -246,19 +243,6 @@ const Ads: React.FC = () => {
 
     fetchAds();
   }, []);
-
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100">
-        <Spinner animation="border" role="status">
-        </Spinner>
-      </div>
-    );
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
 
   const toggleCategory = (slug: string) => {
     setExpandedCategory(expandedCategory === slug ? null : slug);
@@ -283,14 +267,26 @@ const Ads: React.FC = () => {
       </Row>
 
       <h1 className="my-4">Recent Ads</h1>
-      <Row>
-        {ads.map(ad => (
-          <Col md={4} key={ad.id}>
-            <AdCard ad={ad} />
-          </Col>
-        ))}
-      </Row>
+
+      {loading ? (
+        <div className="d-flex justify-content-center align-items-center my-4">
+          <Spinner animation="border" role="status">
+            <span className="visually-hidden">Loading ads...</span>
+          </Spinner>
+        </div>
+      ) : error ? (
+        <Alert variant="danger">{error}</Alert>
+      ) : (
+        <Row>
+          {ads.map(ad => (
+            <Col md={4} key={ad.id}>
+              <AdCard ad={ad} />
+            </Col>
+          ))}
+        </Row>
+      )}
     </div>
   );
 };
+
 export default Ads;
