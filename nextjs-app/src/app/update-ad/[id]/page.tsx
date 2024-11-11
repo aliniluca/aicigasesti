@@ -3,9 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import CreateAdForm from '@/app/components/CreateAdForm';
 import { apiRequest } from '@/utils/axiosApiRequest';
+import { AdFormData } from '@/types/types';
 
 const AdPage = ({ params }: { params: { id: string } }) => {
-  const [initialData, setInitialData] = useState<Partial<FormData> | null>(null);
+  const [initialData, setInitialData] = useState<Partial<AdFormData> | undefined>(undefined);
 
   useEffect(() => {
     console.log(params.id)

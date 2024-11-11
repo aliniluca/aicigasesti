@@ -19,20 +19,20 @@ import { createErrorResponse } from 'src/utils/common/response.util';
 import { AccessTokenAuthGuard } from 'src/guards/access-token-auth.guard';
 
 @Controller('ads')
+@UseGuards(AccessTokenAuthGuard)
 export class AdController {
   constructor(private readonly adService: AdService) {}
 
   @Post()
-  @UseGuards(AccessTokenAuthGuard)
   async create(@Body() createAdDto: CreateAdDto, @Req() request: Request) {
-    const user = request.user as { sub: number }; // Type assertion for the user
+    const user = request.user as { sub: number };
     if (!user || !user.sub) {
       throw new HttpException('User not authenticated', HttpStatus.UNAUTHORIZED);
     }
-    // Set the createdById field using user.sub
+
     const adDtoWithUser = {
       ...createAdDto,
-      createdById: user.sub, // Assign user.sub to createdById
+      createdById: user.sub,
     };
 
     try {

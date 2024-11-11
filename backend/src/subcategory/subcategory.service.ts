@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateSubcategoryDto } from './dto/create-subcategory.dto';
 import { UpdateSubcategoryDto } from './dto/update-subcategory.dto';
@@ -30,6 +30,16 @@ export class SubcategoryService {
     return this.prisma.subcategory.findUnique({
       where: { id },
     });
+  }
+
+  async findBySlug(slug: string) {
+    const subcategory = await this.prisma.subcategory.findUnique({
+      where: { slug },
+    });
+    if (!subcategory) {
+      throw new NotFoundException('Subcategory not found');
+    }
+    return subcategory;
   }
 
   async findAllSubcategoriesByCategoryId(categoryId: string) {

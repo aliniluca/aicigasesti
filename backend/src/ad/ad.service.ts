@@ -17,7 +17,7 @@ export class AdService {
     private readonly prisma: PrismaService,
     private readonly mediaService: MediaService,
   ) {
-    this.utcOffsetHours = parseInt(process.env.UTC_HOURS_OFFSET, 10);
+    this.utcOffsetHours = parseInt(process.env.UTC_HOURS_OFFSET ?? '0', 10);
   }
 
   private async getBase64ImageFromMedia(mediaItem: any): Promise<string> {

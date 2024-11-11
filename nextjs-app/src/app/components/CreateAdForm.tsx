@@ -5,27 +5,15 @@ import { apiRequest } from '@/utils/axiosApiRequest';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { toast } from 'react-toastify'; 
 import { Button } from 'react-bootstrap';
+import { AdFormData, Category, Subcategory, MediaData } from '@/types/types'; // Importing shared types
 
 interface CreateAdFormProps {
   adId?: string;
-  initialData?: Partial<FormData>;
+  initialData?: Partial<AdFormData>;
 }
 
-interface FormData {
-  title: string;
-  description: string;
-  price: number;
-  minimumPrice: number;
-  type: string;
-  acceptMessages: boolean;
-  location: string;
-  categoryId: string;
-  subcategoryId: string;
-  adStatus: 'ACTIVE',
-}
-
-const CreateAdForm = ({ adId, initialData }: CreateAdFormProps) => {
-  const [formData, setFormData] = useState<FormData>({
+const CreateAdForm = ({ adId = '', initialData }: CreateAdFormProps) => {
+  const [formData, setFormData] = useState<AdFormData>({
     title: '',
     description: '',
     price: 0,
@@ -36,20 +24,32 @@ const CreateAdForm = ({ adId, initialData }: CreateAdFormProps) => {
     categoryId: '',
     subcategoryId: '',
     adStatus: 'ACTIVE',
+    mediaData: [], // Initialize mediaData
   });
 
-  const [categories, setCategories] = useState<string[]>([]);
-  const [subcategories, setSubcategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
-  const [existingImages, setExistingImages] = useState<{ b64: string }[]>([]);
-  const [initialExistingImages, setInitialExistingImages] = useState<{ b64: string }[]>([]); // Store initial state
+  const [existingImages, setExistingImages] = useState<MediaData[]>([]);
+  const [initialExistingImages, setInitialExistingImages] = useState<MediaData[]>([]); // Store initial state
 
   useEffect(() => {
     if (initialData) {
-        console.log("received Data: ",initialData)
+      console.log("received Data: ", initialData);
       // Extract and set only the necessary fields from initialData
-      const { title, description, price, minimumPrice, acceptMessages, location, categoryId, subcategoryId, mediaData } = initialData;
+      const {
+        title,
+        description,
+        price,
+        minimumPrice,
+        acceptMessages,
+        location,
+        categoryId,
+        subcategoryId,
+        mediaData, // Now recognized
+      } = initialData;
+
       setFormData({
         title: title || '',
         description: description || '',
@@ -61,12 +61,23 @@ const CreateAdForm = ({ adId, initialData }: CreateAdFormProps) => {
         categoryId: categoryId || '',
         subcategoryId: subcategoryId || '',
         adStatus: 'ACTIVE',
+        mediaData: mediaData || [], // Set mediaData
       });
 
-      setExistingImages(mediaData || []);
-      console.log("init, mediaData: ",mediaData)
-      setInitialExistingImages(mediaData || []); 
-
+      // Ensure that mediaData includes 'id'
+      if (mediaData) {
+        setExistingImages(mediaData.map(media => ({
+          b64: media.b64,
+          id: media.id // Ensure 'id' is present if available
+        })));
+        setInitialExistingImages(mediaData.map(media => ({
+          b64: media.b64,
+          id: media.id
+        })));
+      } else {
+        setExistingImages([]);
+        setInitialExistingImages([]);
+      }
     }
   }, [initialData]);
 
@@ -75,7 +86,7 @@ const CreateAdForm = ({ adId, initialData }: CreateAdFormProps) => {
       try {
         const response = await apiRequest({
           method: 'GET',
-          url: `${process.env.NEXT_PUBLIC_BACKEND_URL_Get_CATEGORIES}`,
+          url: `${process.env.NEXT_PUBLIC_BACKEND_URL_GET_CATEGORIES}`,
         });
         setCategories(response.data);
       } catch (error) {
@@ -104,16 +115,25 @@ const CreateAdForm = ({ adId, initialData }: CreateAdFormProps) => {
     loadSubcategories();
   }, [formData.categoryId]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value, type } = e.target;
+    
+    let newValue: any;
+
+    if (type === 'checkbox') {
+      const target = e.target as HTMLInputElement;
+      newValue = target.checked;
+    } else if (type === 'number') {
+      newValue = Number(value);
+    } else {
+      newValue = value;
+    }
+
     setFormData(prevFormData => ({
       ...prevFormData,
-      [name]:
-        type === 'checkbox'
-          ? checked
-          : name === 'price' || name === 'minimumPrice'
-          ? Number(value)
-          : value,
+      [name]: newValue,
     }));
   };
 
@@ -132,9 +152,8 @@ const CreateAdForm = ({ adId, initialData }: CreateAdFormProps) => {
     setSelectedImages(prevImages => prevImages.filter((_, i) => i !== index));
   };
 
-  const removeExistingImage = (index: number) => {
-    setExistingImages(prevImages => prevImages.filter((_, i) => i !== index));
-    
+  const removeExistingImage = (id: string) => {
+    setExistingImages(prevImages => prevImages.filter(image => image.id !== id));
   };
 
   const uploadImages = async (adId: string) => {
@@ -163,6 +182,7 @@ const CreateAdForm = ({ adId, initialData }: CreateAdFormProps) => {
 
     return uploadedMediaIds;
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -184,58 +204,48 @@ const CreateAdForm = ({ adId, initialData }: CreateAdFormProps) => {
         resetForm();
         toast.success('Ad updated successfully'); 
 
-      
-         // Compare initialExistingImages with current existingImages to determine if images have changed
-      const imagesHaveChanged =
-        initialExistingImages.length !== existingImages.length ||
-        initialExistingImages.some((img, index) => img.b64 !== existingImages[index]?.b64);
+        // Compare initialExistingImages with current existingImages to determine if images have changed
+        const imagesHaveChanged =
+          initialExistingImages.length !== existingImages.length ||
+          initialExistingImages.some((img, index) => img.b64 !== existingImages[index]?.b64);
 
-        
-      if (imagesHaveChanged) {
-        console.log('Images have changed');
+        if (imagesHaveChanged) {
+          console.log('Images have changed');
 
-        // Delete removed images
-        const removedImages = initialExistingImages.filter(
-          (img) => !existingImages.some((currentImg) => currentImg.b64 === img.b64)
-        );
-        var res = null;
-        for (const image of removedImages) {
-            console.log("in removedImages looping for delete req, image.id: ",image.id)
-          try {
-            res =  await apiRequest({
-              method: 'DELETE',
-              url: `${process.env.NEXT_PUBLIC_BACKEND_URL_DELETE_MEDIA}`,
-              data: { id: image.id }, // Using media ID for deletion
-              useCredentials: true,
-            });
-            console.log('Image deleted successfully:', image.id);
-          } catch (error) {
-            console.error('Error deleting image:', error);
+          // Delete removed images
+          const removedImages = initialExistingImages.filter(
+            (img) => !existingImages.some((currentImg) => currentImg.b64 === img.b64)
+          );
+          for (const image of removedImages) {
+            if (!image.id) {
+              console.warn(`Image with b64 ${image.b64} has no ID and cannot be deleted.`);
+              continue;
+            }
+            try {
+              await apiRequest({
+                method: 'DELETE',
+                url: `${process.env.NEXT_PUBLIC_BACKEND_URL_DELETE_MEDIA}`,
+                data: { id: image.id }, // Using media ID for deletion
+                useCredentials: true,
+              });
+              console.log('Image deleted successfully:', image.id);
+            } catch (error) {
+              console.error('Error deleting image:', error);
+            }
           }
-          console.log("res: ",res)
         }
 
-
-      }
-
-        // Identify new images
-        console.log("checking if new images exists...")
+        // Identify and upload new images
         const newImages = selectedImages.filter(
-            (newImage) => !existingImages.some((existingImage) => URL.createObjectURL(newImage) === `data:image/jpeg;base64,${existingImage.b64}`)
-                  );
-        
-        console.log("selected Images: ",selectedImages)
+          (newImage) => !existingImages.some((existingImage) => URL.createObjectURL(newImage) === `data:image/jpeg;base64,${existingImage.b64}`)
+        );
 
-        // Upload only new images
-        if (selectedImages.length > 0) {
+        if (newImages.length > 0) {
           console.log('Uploading new images...');
           const mediaIds = await uploadImages(adId);
           console.log('New images uploaded successfully:', mediaIds);
-        // update media
         }
       } else {
-        console.log("creating new ad..")
-        console.log("formData:",formData)
         // Create new ad
         const createAdResponse = await apiRequest({
           method: 'POST',
@@ -258,7 +268,6 @@ const CreateAdForm = ({ adId, initialData }: CreateAdFormProps) => {
         console.log('Ad created and media uploaded successfully:', mediaIds);
         resetForm();
         toast.success('Ad created and media uploaded successfully'); 
-
       }
     } catch (error) {
       console.error('Error creating or updating ad:', error);
@@ -281,6 +290,7 @@ const CreateAdForm = ({ adId, initialData }: CreateAdFormProps) => {
       categoryId: '',
       subcategoryId: '',
       adStatus: 'ACTIVE',
+      mediaData: [], // Initialize mediaData
     });
     setCategories([]);
     setSubcategories([]);
@@ -290,7 +300,7 @@ const CreateAdForm = ({ adId, initialData }: CreateAdFormProps) => {
   };
   
   return (
-    <form onSubmit={handleSubmit} className={`container mt-4`}>
+    <form onSubmit={handleSubmit} className="container mt-4">
       <div className="mb-3">
         <label htmlFor="title" className="form-label">Title</label>
         <input
@@ -413,18 +423,18 @@ const CreateAdForm = ({ adId, initialData }: CreateAdFormProps) => {
           {existingImages.map((media, index) => (
             <div key={index} className="d-inline-block me-2">
               <img src={`data:image/jpeg;base64,${media.b64}`} alt={`Base64 Image ${index}`} width="100" height="100" className="d-block mb-2" />
-              <button type="button" className="btn btn-danger btn-sm" onClick={() => removeExistingImage(index)}>Remove</button>
+              <button type="button" className="btn btn-danger btn-sm" onClick={() => removeExistingImage(media.id ?? '')}>Remove</button>
             </div>
           ))}
         </div>
       </div>
-        <div className='text-center p-10'>
+      <div className='text-center p-10'>
         <Button type="submit" className="btn btn-primary">Submit</Button>
-          {/* Reset Button */}
-          <Button type="button" onClick={resetForm} className="ml-14 btn btn-secondary">
-            Reset
-          </Button>
-        </div>
+        {/* Reset Button */}
+        <Button type="button" onClick={resetForm} className="ml-14 btn btn-secondary">
+          Reset
+        </Button>
+      </div>
     </form>
   );
 };

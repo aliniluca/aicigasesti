@@ -37,9 +37,15 @@ const SubcategoryAdsPage: React.FC<PageProps> = ({ params }) => {
       try {
         const response = await apiRequest({
           method: 'GET',
-          url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/ads/category/${categorySlug}/subcategory/${subcategorySlug}`,
+          url: `${process.env.NEXT_PUBLIC_BACKEND_URL_GET_AD}/category/${categorySlug}/subcategory/${subcategorySlug}`,
         });
-        setAds(response.data.data as Ad[]);
+        
+        // Defensive check for response data structure
+        if (response && response.data && Array.isArray(response.data.data)) {
+          setAds(response.data.data as Ad[]);
+        } else {
+          throw new Error('Unexpected response structure');
+        }
       } catch (err: any) {
         setError(err.message || 'Unexpected error occurred.');
         console.error('Error fetching ads:', err);
@@ -48,14 +54,16 @@ const SubcategoryAdsPage: React.FC<PageProps> = ({ params }) => {
       }
     };
 
-    fetchAds();
+    if (categorySlug && subcategorySlug) {
+      fetchAds();
+    }
   }, [categorySlug, subcategorySlug]);
 
   if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center min-vh-100">
         <Spinner animation="border" role="status">
-          <span className="sr-only">Loading ads...</span>
+          <span className="visually-hidden">Loading ads...</span>
         </Spinner>
       </div>
     );
@@ -87,4 +95,4 @@ const SubcategoryAdsPage: React.FC<PageProps> = ({ params }) => {
   );
 };
 
-export default SubcategoryAdsPage; 
+export default SubcategoryAdsPage;

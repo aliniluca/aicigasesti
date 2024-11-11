@@ -71,6 +71,23 @@ export class SubcategoryController {
     }
   }
 
+  @Get('by-slug/:slug')
+  async findBySlug(@Param('slug') slug: string) {
+    try {
+      const subcategory = await this.subcategoryService.findBySlug(slug);
+      return createSuccessResponse(subcategory, 'Subcategory fetched successfully by slug');
+    } catch (error: any) {
+      if (error.status === HttpStatus.NOT_FOUND) {
+        return createErrorResponse('Subcategory not found', error.message, HttpStatus.NOT_FOUND);
+      }
+      return createErrorResponse(
+        'Failed to fetch subcategory',
+        error.message || 'An error occurred while fetching the subcategory by slug',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   @Get('by-category/:categoryId')
   async findAllSubcategoriesByCategoryId(@Param('categoryId') categoryId: string) {
     try {

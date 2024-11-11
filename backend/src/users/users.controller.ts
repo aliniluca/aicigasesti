@@ -113,7 +113,7 @@ export class UsersController {
   @Post('admin-only')
   @UseGuards(AccessTokenAuthGuard, RolesGuard)
   @Roles('admin') // Only 'admin' can access this route
-  adminOnlyAction(@Req() request) {
+  adminOnlyAction(  ) {
     return { message: 'Admin action performed' };
   }
 }

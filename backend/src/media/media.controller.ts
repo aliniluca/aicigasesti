@@ -94,7 +94,7 @@ export class MediaController {
       await fs.rename(tempPath, finalPath);
 
       // Create media entry with dynamic type and URL
-      const mediaUrl = `/uploads/${MEDIA_TYPE_DIRECTORIES[type.toLowerCase()]}/${file.filename}`;
+      const mediaUrl = `/uploads/${MEDIA_TYPE_DIRECTORIES[type.toLowerCase() as keyof typeof MEDIA_TYPE_DIRECTORIES]}/${file.filename}`;
       const media = await this.mediaService.create({
         url: mediaUrl,
         type,
@@ -140,7 +140,7 @@ export class MediaController {
       if (file) {
         // Determine the new upload directory and type
         const fileExtension = extname(file.originalname).toLowerCase();
-        const { uploadDirectory, type } = getUploadDirectoryAndType(fileExtension, updateMediaDto.type);
+        const { uploadDirectory, type } = getUploadDirectoryAndType(fileExtension, updateMediaDto.type ?? '');
 
         // Remove the old file from the server
         await this.mediaService.deleteFile(existingMedia.url);
@@ -151,7 +151,8 @@ export class MediaController {
         await fs.rename(tempPath, finalPath);
 
         // Update file URL in the DTO
-        updateMediaDto.url = `/uploads/${MEDIA_TYPE_DIRECTORIES[type.toLowerCase()]}/${file.filename}`;
+        updateMediaDto.url = `/uploads/${MEDIA_TYPE_DIRECTORIES[type.toLowerCase() as keyof typeof MEDIA_TYPE_DIRECTORIES]}/${file.filename}`;
+
         updateMediaDto.type = type;
       }
 
