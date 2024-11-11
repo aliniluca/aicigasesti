@@ -16,16 +16,16 @@ export class RedisService {
     try {
       await this.client.ping(); // Simple ping command to check connection
       this.logger.log('Redis connection successful');
-    } catch (error) {
-      this.logger.error('Redis connection failed', error.stack);
+    } catch (error: any) {
+      this.logger.error('Redis connection failed', error.message || 'An unknown error occurred during connection');
     }
   }
 
   async set(key: string, value: string, expiry: number): Promise<void> {
     try {
       await this.client.set(key, value, 'EX', expiry); // 'EX' sets the expiry in seconds
-    } catch (error) {
-      this.logger.error(`Failed to set key ${key}`, error.stack);
+    } catch (error: any) {
+      this.logger.error(`Failed to set key ${key}`, error.message || 'An unknown error occurred during setting value');
       throw error;
     }
   }
@@ -33,8 +33,8 @@ export class RedisService {
   async get(key: string): Promise<string | null> {
     try {
       return await this.client.get(key);
-    } catch (error) {
-      this.logger.error(`Failed to get key ${key}`, error.stack);
+    } catch (error: any) {
+      this.logger.error(`Failed to get key ${key}`, error.message || 'An unknown error occurred during fetching value');
       throw error;
     }
   }
@@ -42,8 +42,8 @@ export class RedisService {
   async del(key: string): Promise<void> {
     try {
       await this.client.del(key);
-    } catch (error) {
-      this.logger.error(`Failed to delete key ${key}`, error.stack);
+    } catch (error: any) {
+      this.logger.error(`Failed to delete key ${key}`, error.message || 'An unknown error occurred during deletion');
       throw error;
     }
   }

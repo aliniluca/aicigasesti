@@ -18,7 +18,6 @@ import { UpdateAdDto } from './dto/update-ad.dto';
 import { createErrorResponse } from 'src/utils/common/response.util';
 import { AccessTokenAuthGuard } from 'src/guards/access-token-auth.guard';
 
-
 @Controller('ads')
 export class AdController {
   constructor(private readonly adService: AdService) {}
@@ -38,9 +37,9 @@ export class AdController {
 
     try {
       return await this.adService.create(adDtoWithUser);
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
-        createErrorResponse('Error creating ad', error.message),
+        createErrorResponse('Error creating ad', error.message || 'Unknown error occurred'),
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -50,9 +49,9 @@ export class AdController {
   async findAll() {
     try {
       return await this.adService.findAll();
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
-        createErrorResponse('Error fetching ads', error.message),
+        createErrorResponse('Error fetching ads', error.message || 'Unknown error occurred'),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -62,9 +61,9 @@ export class AdController {
   async findOne(@Param('id') id: string) {
     try {
       return await this.adService.findOne(id);
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
-        createErrorResponse('Error fetching ad', error.message),
+        createErrorResponse('Error fetching ad', error.message || 'Unknown error occurred'),
         HttpStatus.NOT_FOUND,
       );
     }
@@ -74,9 +73,9 @@ export class AdController {
   async update(@Param('id') id: string, @Body() updateAdDto: UpdateAdDto) {
     try {
       return await this.adService.update(id, updateAdDto);
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
-        createErrorResponse('Error updating ad', error.message),
+        createErrorResponse('Error updating ad', error.message || 'Unknown error occurred'),
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -86,9 +85,9 @@ export class AdController {
   async remove(@Param('id') id: string) {
     try {
       return await this.adService.remove(id);
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
-        createErrorResponse('Error deleting ad', error.message),
+        createErrorResponse('Error deleting ad', error.message || 'Unknown error occurred'),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -108,11 +107,11 @@ export class AdController {
         message: 'Ads fetched successfully',
         status: 'success',
       };
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
         {
           message: 'Error fetching ads by subcategory',
-          error: error.message,
+          error: error.message || 'Unknown error occurred',
         },
         error.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );

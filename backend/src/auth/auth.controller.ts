@@ -3,7 +3,6 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { createSuccessResponse, createErrorResponse } from 'src/utils/common/response.util';
 import { Response, Request } from 'express';
-import { RedisService } from '../redis/redis.service';
 import { ConfigService } from '@nestjs/config';
 import { AccessTokenAuthGuard } from 'src/guards/access-token-auth.guard';
 import { RefreshTokenAuthGuard } from 'src/guards/refresh-token-auth.guard';
@@ -16,18 +15,15 @@ export class AuthController {
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
     private readonly usersService: UsersService, // Inject UsersService
-
   ) {}
 
   @Post('login')
   async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) response: Response) {
     try {
       const tokens = await this.authService.login(loginDto);
-
       this.authService.setAuthCookies(response, tokens);
-
       return createSuccessResponse({ tokens }, 'Login successful');
-    } catch (error) {
+    } catch (error: any) {
       return createErrorResponse(
         'Login failed',
         error.message || 'Invalid credentials',
@@ -42,11 +38,9 @@ export class AuthController {
     try {
       const { refreshToken } = request.user as any;
       const newTokens = await this.authService.refreshToken(refreshToken);
-
       this.authService.setAuthCookies(response, newTokens);
-
       return createSuccessResponse({}, 'Token refreshed successfully');
-    } catch (error) {
+    } catch (error: any) {
       return createErrorResponse(
         'Token refresh failed',
         error.message || 'Invalid refresh token',
@@ -58,9 +52,7 @@ export class AuthController {
   @Get('verify-cookie')
   @UseGuards(AccessTokenAuthGuard)
   async verifyAccessTokenFromCookie(@Req() request: Request) {
-
     const user = request.user as JwtPayload; // Cast to JwtPayload
-   // const userDetails = await this.usersService.findUserById(user.sub)
     return { message: 'Access Token from cookie is valid', loggedIn: true, user };
   }
 
@@ -69,13 +61,16 @@ export class AuthController {
     try {
       const refreshToken = request.cookies['refresh_token'];
       if (!refreshToken) {
-        return createErrorResponse('No refresh token found', 'Refresh token is required for logout', HttpStatus.BAD_REQUEST);
+        return createErrorResponse(
+          'No refresh token found',
+          'Refresh token is required for logout',
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       await this.authService.logout(refreshToken, response);
-
       return createSuccessResponse({}, 'Logout successful');
-    } catch (error) {
+    } catch (error: any) {
       return createErrorResponse(
         'Logout failed',
         error.message || 'Error during logout',

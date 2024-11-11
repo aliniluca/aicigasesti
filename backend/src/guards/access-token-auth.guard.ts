@@ -32,7 +32,7 @@ export class AccessTokenAuthGuard implements CanActivate {
       request.user = payload; // Attach the decoded token payload to the request object
 
       return true;
-    } catch (err) {
+    } catch (err: any) {
       if (err.name === 'TokenExpiredError') {
         throw new HttpException(
           createErrorResponse(

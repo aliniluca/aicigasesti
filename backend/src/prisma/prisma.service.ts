@@ -9,8 +9,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     try {
       await this.$connect();
       this.logger.log('Database connected successfully.');
-    } catch (error) {
-      this.logger.error('Database connection failed:', error.message);
+    } catch (error: any) {
+      this.logger.error('Database connection failed:', error.message || 'An unknown error occurred during connection');
       throw error; // Re-throw to let the application handle it
     }
   }
@@ -19,8 +19,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     try {
       await this.$disconnect();
       this.logger.log('Database disconnected successfully.');
-    } catch (error) {
-      this.logger.error('Database disconnection failed:', error.message);
+    } catch (error: any) {
+      this.logger.error('Database disconnection failed:', error.message || 'An unknown error occurred during disconnection');
       throw error; // Re-throw to let the application handle it
     }
   }

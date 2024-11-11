@@ -33,7 +33,7 @@ export class AdService {
 
       // Fetch the base64 image from the correct path
       return await this.mediaService.getBase64Image(fullPath);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching image for media item:', error.message);
       throw new Error(`Failed to fetch image for media item: ${mediaItem.id || 'unknown'}`);
     }
@@ -92,13 +92,14 @@ export class AdService {
       });
   
       return createSuccessResponse({ adId: ad.id }, 'Ad created successfully');
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
-        createErrorResponse('Failed to create the ad', error.message),
+        createErrorResponse('Failed to create the ad', error.message || 'Unknown error occurred'),
         HttpStatus.BAD_REQUEST,
       );
     }
   }
+
   async findAll() {
     try {
       const ads = await this.prisma.ad.findMany({
@@ -109,9 +110,9 @@ export class AdService {
       const adsWithMedia = await Promise.all(adsWithConvertedTimes.map(ad => this.processAdMedia(ad)));
 
       return createSuccessResponse(adsWithMedia, 'Ads fetched successfully');
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
-        createErrorResponse('Failed to fetch ads', error.message),
+        createErrorResponse('Failed to fetch ads', error.message || 'Unknown error occurred'),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -137,9 +138,9 @@ export class AdService {
       const adWithMedia = await this.processAdMedia(adWithConvertedTimes);
   
       return createSuccessResponse({ ad: adWithMedia }, 'Ad fetched successfully');
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
-        createErrorResponse('Failed to fetch the ad', error.message),
+        createErrorResponse('Failed to fetch the ad', error.message || 'Unknown error occurred'),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -165,9 +166,9 @@ export class AdService {
       }
 
       return createSuccessResponse(updatedAd, 'Ad updated successfully');
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
-        createErrorResponse('Failed to update the ad', error.message),
+        createErrorResponse('Failed to update the ad', error.message || 'Unknown error occurred'),
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -175,13 +176,12 @@ export class AdService {
 
   async remove(id: string) {
     try {
-      
       // Fetch media associated with the ad
       const ad = await this.prisma.ad.findUnique({
         where: { id },
         include: { media: true },
       });
-      console.log("ad found: ",ad)
+
       if (!ad) {
         throw new HttpException(
           createErrorResponse('Ad not found', 'The requested ad does not exist'),
@@ -193,8 +193,6 @@ export class AdService {
       await Promise.all(
         ad.media.map(async (mediaItem) => {
           try {
-            console.log("mediaItem: ",mediaItem)
-            console.log("deleting media item by id: ",mediaItem.id)
             await this.mediaService.remove(mediaItem.id);
           } catch (error) {
             console.error(`Failed to delete media item: ${mediaItem.id}`, error);
@@ -215,55 +213,32 @@ export class AdService {
       }
 
       return createSuccessResponse(deletedAd, 'Ad deleted successfully');
-    
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException(
-        createErrorResponse('Failed to delete the ad', error.message),
+        createErrorResponse('Failed to delete the ad', error.message || 'Unknown error occurred'),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   async findAdsBySubcategorySlug(categorySlug: string, subcategorySlug: string) {
-    console.log(`Fetching ads for category: ${categorySlug}, subcategory: ${subcategorySlug}`);
+    const subcategory = await this.prisma.subcategory.findUnique({
+      where: { slug: subcategorySlug },
+      include: { category: true },
+    });
 
-    try {
-      // Retrieve the subcategory by its unique slug
-      const subcategory = await this.prisma.subcategory.findUnique({
-        where: { slug: subcategorySlug },
-        include: { category: true },
-      });
-
-      // Verify that the subcategory exists and belongs to the specified category
-      if (!subcategory || subcategory.category.slug !== categorySlug) {
-        throw new HttpException(
-          createErrorResponse('Subcategory not found', 'No subcategory matches the provided slugs'),
-          HttpStatus.NOT_FOUND,
-        );
-      }
-
-      // Fetch ads under the found subcategory
-      const ads = await this.prisma.ad.findMany({
-        where: {
-          subcategoryId: subcategory.id,
-        },
-        include: {
-          media: true,
-          createdBy: true,
-        },
-      });
-
-      // Process ads (e.g., convert times, handle media)
-      const adsWithConvertedTimes = ads.map(ad => this.convertAdTimes(ad));
-      const adsWithMedia = await Promise.all(
-        adsWithConvertedTimes.map(ad => this.processAdMedia(ad)),
-      );
-
-      // Return the ads (which could be an empty array)
-      return createSuccessResponse(adsWithMedia, 'Ads fetched successfully');
-    } catch (error) {
-      console.error(`Error in findAdsBySubcategorySlug: ${error.message}`);
-      throw error; // Rethrow to be caught by controller
+    if (!subcategory) {
+      throw new HttpException('Subcategory not found', HttpStatus.NOT_FOUND);
     }
+
+    if (subcategory.category.slug !== categorySlug) {
+      throw new HttpException('Category does not match subcategory', HttpStatus.NOT_FOUND);
+    }
+
+    const ads = await this.prisma.ad.findMany({
+      where: { subcategoryId: subcategory.id },
+      include: { media: true },
+    });
+    return ads;
   }
 }

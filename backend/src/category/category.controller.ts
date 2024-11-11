@@ -13,8 +13,12 @@ export class CategoryController {
     try {
       const category = await this.categoryService.create(createCategoryDto);
       return createSuccessResponse(category, 'Category successfully created');
-    } catch (error) {
-      return createErrorResponse('Failed to create category', error.message, HttpStatus.BAD_REQUEST);
+    } catch (error: any) {
+      return createErrorResponse(
+        'Failed to create category',
+        error.message || 'An error occurred while creating the category',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -23,8 +27,12 @@ export class CategoryController {
     try {
       const category = await this.categoryService.update(id, updateCategoryDto);
       return createSuccessResponse(category, 'Category successfully updated');
-    } catch (error) {
-      return createErrorResponse('Failed to update category', error.message, HttpStatus.BAD_REQUEST);
+    } catch (error: any) {
+      return createErrorResponse(
+        'Failed to update category',
+        error.message || 'An error occurred while updating the category',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -33,8 +41,12 @@ export class CategoryController {
     try {
       const categories = await this.categoryService.findAll();
       return createSuccessResponse(categories, 'Categories fetched successfully');
-    } catch (error) {
-      return createErrorResponse('Failed to fetch categories', error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (error: any) {
+      return createErrorResponse(
+        'Failed to fetch categories',
+        error.message || 'An error occurred while fetching categories',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -43,11 +55,19 @@ export class CategoryController {
     try {
       const category = await this.categoryService.findOne(id);
       if (!category) {
-        return createErrorResponse('Category not found', 'No category found with the given ID', HttpStatus.NOT_FOUND);
+        return createErrorResponse(
+          'Category not found',
+          'No category found with the given ID',
+          HttpStatus.NOT_FOUND,
+        );
       }
       return createSuccessResponse(category, 'Category fetched successfully');
-    } catch (error) {
-      return createErrorResponse('Failed to fetch category', error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (error: any) {
+      return createErrorResponse(
+        'Failed to fetch category',
+        error.message || 'An error occurred while fetching the category',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -56,8 +76,12 @@ export class CategoryController {
     try {
       await this.categoryService.remove(id);
       return createSuccessResponse(null, 'Category successfully deleted');
-    } catch (error) {
-      return createErrorResponse('Failed to delete category', error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (error: any) {
+      return createErrorResponse(
+        'Failed to delete category',
+        error.message || 'An error occurred while deleting the category',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

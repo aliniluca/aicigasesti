@@ -13,8 +13,12 @@ export class SubcategoryController {
     try {
       const subcategory = await this.subcategoryService.create(createSubcategoryDto);
       return createSuccessResponse(subcategory, 'Subcategory successfully created');
-    } catch (error) {
-      return createErrorResponse('Failed to create subcategory', error.message, HttpStatus.BAD_REQUEST);
+    } catch (error: any) {
+      return createErrorResponse(
+        'Failed to create subcategory',
+        error.message || 'An error occurred while creating the subcategory',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -23,8 +27,12 @@ export class SubcategoryController {
     try {
       const subcategory = await this.subcategoryService.update(id, updateSubcategoryDto);
       return createSuccessResponse(subcategory, 'Subcategory successfully updated');
-    } catch (error) {
-      return createErrorResponse('Failed to update subcategory', error.message, HttpStatus.BAD_REQUEST);
+    } catch (error: any) {
+      return createErrorResponse(
+        'Failed to update subcategory',
+        error.message || 'An error occurred while updating the subcategory',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -33,8 +41,12 @@ export class SubcategoryController {
     try {
       const subcategories = await this.subcategoryService.findAll();
       return createSuccessResponse(subcategories, 'Subcategories fetched successfully');
-    } catch (error) {
-      return createErrorResponse('Failed to fetch subcategories', error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (error: any) {
+      return createErrorResponse(
+        'Failed to fetch subcategories',
+        error.message || 'An error occurred while fetching subcategories',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -43,11 +55,19 @@ export class SubcategoryController {
     try {
       const subcategory = await this.subcategoryService.findOne(id);
       if (!subcategory) {
-        return createErrorResponse('Subcategory not found', 'No subcategory found with the given ID', HttpStatus.NOT_FOUND);
+        return createErrorResponse(
+          'Subcategory not found',
+          'No subcategory found with the given ID',
+          HttpStatus.NOT_FOUND,
+        );
       }
       return createSuccessResponse(subcategory, 'Subcategory fetched successfully');
-    } catch (error) {
-      return createErrorResponse('Failed to fetch subcategory', error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (error: any) {
+      return createErrorResponse(
+        'Failed to fetch subcategory',
+        error.message || 'An error occurred while fetching the subcategory',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -56,8 +76,12 @@ export class SubcategoryController {
     try {
       const subcategories = await this.subcategoryService.findAllSubcategoriesByCategoryId(categoryId);
       return createSuccessResponse(subcategories, 'Subcategories fetched successfully by category ID');
-    } catch (error) {
-      return createErrorResponse('Failed to fetch subcategories', error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (error: any) {
+      return createErrorResponse(
+        'Failed to fetch subcategories',
+        error.message || 'An error occurred while fetching subcategories by category ID',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -66,8 +90,12 @@ export class SubcategoryController {
     try {
       await this.subcategoryService.remove(id);
       return createSuccessResponse(null, 'Subcategory successfully deleted');
-    } catch (error) {
-      return createErrorResponse('Failed to delete subcategory', error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (error: any) {
+      return createErrorResponse(
+        'Failed to delete subcategory',
+        error.message || 'An error occurred while deleting the subcategory',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

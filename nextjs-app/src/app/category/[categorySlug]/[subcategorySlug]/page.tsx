@@ -5,14 +5,18 @@ import { Row, Col, Spinner, Alert } from 'react-bootstrap';
 import AdCard from '@/app/components/AdCard';
 import { apiRequest } from '@/utils/axiosApiRequest';
 
+interface Media {
+  b64: string;
+}
+
 interface Ad {
   id: string;
-  title: string;  
+  title: string;
   description: string;
   price: number;
   location: string;
   type: string;
-  mediaData: string;
+  mediaData: Media[];
 }
 
 interface PageProps {
@@ -31,13 +35,14 @@ const SubcategoryAdsPage: React.FC<PageProps> = ({ params }) => {
   useEffect(() => {
     const fetchAds = async () => {
       try {
-        const data = await apiRequest({
+        const response = await apiRequest({
           method: 'GET',
-          url: `/ads/category/${categorySlug}/subcategory/${subcategorySlug}`,
+          url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/ads/category/${categorySlug}/subcategory/${subcategorySlug}`,
         });
-        setAds(data.data as Ad[]);
+        setAds(response.data.data as Ad[]);
       } catch (err: any) {
         setError(err.message || 'Unexpected error occurred.');
+        console.error('Error fetching ads:', err);
       } finally {
         setLoading(false);
       }
@@ -69,7 +74,7 @@ const SubcategoryAdsPage: React.FC<PageProps> = ({ params }) => {
         {ads.length > 0 ? (
           ads.map(ad => (
             <Col md={4} key={ad.id}>
-              <AdCard ad={{...ad, mediaData: Array.isArray(ad.mediaData) ? ad.mediaData : []}} />
+              <AdCard ad={ad} />
             </Col>
           ))
         ) : (
