@@ -26,7 +26,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   return (
     <html lang="en">
-      <body>
+      <body suppressHydrationWarning={true}>
         <Provider store={store}>
           <CheckAuth onAuthComplete={handleAuthComplete} />
           {authChecked ? (
