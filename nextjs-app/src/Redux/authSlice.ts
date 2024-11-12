@@ -1,14 +1,15 @@
-// src/utils/authSlice.ts
+// src/Redux/authSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { User } from '../types/User';
 
 interface AuthState {
   loggedIn: boolean;
-  user?: User; // Optional because the user might not be available initially
+  user: User | null | undefined; // Allow null or undefined
 }
 
 const initialState: AuthState = {
   loggedIn: false,
+  user: undefined,
 };
 
 const authSlice = createSlice({
@@ -18,7 +19,7 @@ const authSlice = createSlice({
     setLoggedIn: (state, action: PayloadAction<boolean>) => {
       state.loggedIn = action.payload;
     },
-    setUser: (state, action: PayloadAction<User>) => {
+    setUser: (state, action: PayloadAction<User | null | undefined>) => {
       state.user = action.payload;
     },
     clearUser: (state) => {

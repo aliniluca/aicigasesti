@@ -20,10 +20,13 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly redisService: RedisService,
   ) {
-    this.refreshTokenExpiry = parseInt(this.configService.get<string>('REFRESH_TOKEN_EXPIRY'), 10);
-    this.accessTokenExpiry = this.configService.get<string>('ACCESS_TOKEN_EXPIRY');
-    this.jwtRefreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET');
-    this.jwtAccessSecret = this.configService.get<string>('JWT_ACCESS_SECRET');
+    const refreshTokenExpiry = this.configService.get<string>('REFRESH_TOKEN_EXPIRY');
+    this.refreshTokenExpiry = refreshTokenExpiry ? parseInt(refreshTokenExpiry, 10) : 0; // Use a default value if undefined
+    
+    this.accessTokenExpiry = this.configService.get<string>('ACCESS_TOKEN_EXPIRY') || 'default_access_token_expiry'; // Provide a default value
+    this.jwtRefreshSecret = this.configService.get<string>('JWT_REFRESH_SECRET') || 'default_jwt_refresh_secret'; // Provide a default value
+    this.jwtAccessSecret = this.configService.get<string>('JWT_ACCESS_SECRET') || 'default_jwt_access_secret'; // Provide a default value
+    
   }
 
   async login(loginDto: LoginDto) {

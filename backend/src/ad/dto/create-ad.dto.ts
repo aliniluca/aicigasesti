@@ -3,35 +3,35 @@ import { AdType, AdStatus } from '@prisma/client';
 
 export class CreateAdDto {
   @IsString()
-  title: string;
+  title: string = '';
 
   @IsString()
-  description: string;
+  description: string='';
 
   @IsNumber()
-  price: number;
+  price: number = 0;
 
   @IsNumber()
-  minimumPrice: number;
+  minimumPrice: number = 0;
 
   @IsEnum(AdType)
-  type: AdType;
+  type: AdType = AdType.VAND;
 
   @IsBoolean()
-  acceptMessages: boolean;
+  acceptMessages: boolean = true;
 
   @IsString()
-  location: string;
+  location: string = '';
 
   @IsOptional()
   @IsEnum(AdStatus)
-  adStatus: AdStatus;
+  adStatus: AdStatus = AdStatus.ACTIV;
 
   @IsString()
-  categoryId: string;
+  categoryId: string = '';
 
   @IsString()
-  subcategoryId: string;
+  subcategoryId: string = '';
 
   @IsOptional() // Optional field, will be included from the extracted sub from the request
   @IsInt()

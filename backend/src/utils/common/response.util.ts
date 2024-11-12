@@ -3,7 +3,7 @@ import * as moment from 'moment-timezone';
 
 dotenv.config();
 
-const utcOffsetHours = parseInt(process.env.UTC_HOURS_OFFSET, 10);
+const utcOffsetHours = parseInt(process.env.UTC_HOURS_OFFSET || '0', 10);
 
 export interface SuccessResponse<T> {
   statusCode: number;

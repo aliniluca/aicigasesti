@@ -10,7 +10,7 @@ export class UsersService {
   private readonly utcOffsetHours: number;
 
   constructor(private prisma: PrismaService) {
-    this.utcOffsetHours = parseInt(process.env.UTC_HOURS_OFFSET, 10);
+    this.utcOffsetHours = parseInt(process.env.UTC_HOURS_OFFSET || '0', 10);
   }
 
 
@@ -55,8 +55,8 @@ export class UsersService {
     // Convert timestamps to the desired timezone
     const userWithConvertedTimes = {
       ...user,
-      createdAt: convertUtcToOffset(user.createdAt, this.utcOffsetHours),
-      updatedAt: convertUtcToOffset(user.updatedAt, this.utcOffsetHours),
+      createdAt: convertUtcToOffset(user?.createdAt || new Date(), this.utcOffsetHours),
+      updatedAt: convertUtcToOffset(user?.updatedAt || new Date(), this.utcOffsetHours),
     };
 
     return userWithConvertedTimes;

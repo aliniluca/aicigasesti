@@ -16,7 +16,7 @@ export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer()
-  server: Server;
+  server: Server = new Server();
 
   constructor(private readonly chatService: ChatService) {}
 

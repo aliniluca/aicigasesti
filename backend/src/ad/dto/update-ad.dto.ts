@@ -24,7 +24,7 @@ export class UpdateAdDto {
 
   @IsOptional() 
   @IsBoolean()
-  acceptMessages: boolean;
+  acceptMessages: boolean = true;
 
   @IsOptional() 
   @IsString()

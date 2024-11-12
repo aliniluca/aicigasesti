@@ -17,7 +17,7 @@ export class MediaService {
   private readonly uploadsPath = join(__dirname, '..', '..', '..', 'uploads');
 
   constructor(private readonly prisma: PrismaService) {
-    this.utcOffsetHours = parseInt(process.env.UTC_HOURS_OFFSET, 10);
+    this.utcOffsetHours = parseInt(process.env.UTC_HOURS_OFFSET || '0', 10);
   }
 
   async create(createMediaDto: CreateMediaDto) {

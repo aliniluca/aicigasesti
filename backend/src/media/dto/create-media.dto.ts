@@ -4,12 +4,12 @@ import { MediaType } from '@prisma/client';
 export class CreateMediaDto {
   @IsString()
   @IsNotEmpty()
-  url: string;
+  url: string = '';
 
   @IsEnum(MediaType)
-  type: MediaType;
+  type: MediaType = MediaType.IMAGE;
 
   @IsString()
   @IsNotEmpty()
-  adId: string;  
+  adId: string = '';  
 }
